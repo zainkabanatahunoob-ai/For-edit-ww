@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoidMC Store — Buy Ranks & Coins</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void-bg: #06030f;
+    --void-bg2: #0d0820;
+    --void-surface: rgba(255,255,255,0.04);
+    --void-surface-hover: rgba(255,255,255,0.07);
+    --void-border: rgba(139,92,246,0.18);
+    --void-border-glow: rgba(139,92,246,0.45);
+    --void-purple: #8b5cf6;
+    --void-purple-mid: #7c3aed;
+    --void-purple-bright: #a78bfa;
+    --void-purple-soft: rgba(139,92,246,0.12);
+    --void-cyan: #22d3ee;
+    --void-gold: #f59e0b;
+    --void-text: #f1f0f8;
+    --void-muted: #9891b8;
+    --void-subtle: #5a5280;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --radius-lg: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--void-bg);
+    color: var(--void-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ANIMATED BACKGROUND ── */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-layer::before {
+    content: '';
+    position: absolute;
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(120,60,220,0.13) 0%, transparent 70%);
+    top: -200px; left: -200px;
+    animation: driftA 20s ease-in-out infinite alternate;
+  }
+  .bg-layer::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(34,211,238,0.07) 0%, transparent 70%);
+    bottom: -100px; right: -100px;
+    animation: driftB 25s ease-in-out infinite alternate;
+  }
+  @keyframes driftA { from { transform: translate(0,0) scale(1); } to { transform: translate(60px, 40px) scale(1.1); } }
+  @keyframes driftB { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px, -60px) scale(1.15); } }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: rgba(139,92,246,0.6);
+    border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle { 0%,100%{opacity:0.1;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.5)} }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(6,3,15,0.85);
+    border-bottom: 1px solid var(--void-border);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--void-purple), var(--void-purple-mid));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    border-radius: 8px;
+  }
+  .logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--void-purple-bright); }
+  .nav-links { display: flex; gap: 0.25rem; align-items: center; }
+  .nav-link {
+    color: var(--void-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+  }
+  .nav-link:hover { color: #fff; background: var(--void-surface); }
+  .nav-link.active { color: var(--void-purple-bright); background: var(--void-purple-soft); }
+  .nav-store-btn {
+    background: linear-gradient(135deg, var(--void-purple-mid), var(--void-purple));
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 0 20px rgba(124,58,237,0.3);
+  }
+  .nav-store-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(124,58,237,0.5); }
+  .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--void-muted); border-radius: 2px; transition: all 0.3s; }
+
+  /* ── STORE HEADER ── */
+  .store-header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 64px 2rem 48px;
+  }
+  .store-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--void-purple-soft);
+    border: 1px solid var(--void-border);
+    color: var(--void-purple-bright);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .store-eyebrow::before { content: '✦'; font-size: 8px; }
+  .store-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .store-title .gradient-text {
+    background: linear-gradient(135deg, #a78bfa, var(--void-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .store-subtitle {
+    font-size: 17px;
+    color: var(--void-muted);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── CHECKOUT WRAPPER ── */
+  .checkout-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem 80px;
+  }
+
+  /* ── PROGRESS STEPPER ── */
+  .progress-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .step-connector {
+    height: 2px;
+    width: 80px;
+    background: var(--void-border);
+    margin-bottom: 26px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.5s;
+  }
+  .step-connector.done { background: var(--void-purple-mid); }
+  .step-connector-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--void-purple-mid), var(--void-purple-bright));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .step-connector.active .step-connector-fill { transform: scaleX(1); }
+  .step-circle {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 2px solid var(--void-border);
+    background: var(--void-bg2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--void-subtle);
+    transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+  }
+  .step-circle.active {
+    border-color: var(--void-purple);
+    background: var(--void-purple-soft);
+    color: var(--void-purple-bright);
+    box-shadow: 0 0 20px rgba(139,92,246,0.3);
+  }
+  .step-circle.done {
+    border-color: var(--void-purple-mid);
+    background: var(--void-purple-mid);
+    color: #fff;
+  }
+  .step-circle.done::after {
+    content: '✓';
+    position: absolute;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .step-circle.done span { display: none; }
+  .step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--void-subtle);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    transition: color 0.4s;
+    text-align: center;
+  }
+  .step-item.active .step-label { color: var(--void-purple-bright); }
+  .step-item.done .step-label { color: var(--void-muted); }
+
+  /* ── STEP PANELS ── */
+  .step-panel {
+    display: none;
+    animation: fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1) forwards;
+  }
+  .step-panel.active { display: block; }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── GLASS CARD ── */
+  .glass-card {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid var(--void-border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+  }
+  .glass-card:hover { border-color: rgba(139,92,246,0.28); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--void-purple-bright);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  /* ── PRODUCT CARDS ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .product-card {
+    background: rgba(255,255,255,0.025);
+    border: 1.5px solid rgba(139,92,246,0.15);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--c1, rgba(139,92,246,0.08)) 0%, var(--c2, transparent) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .product-card:hover { border-color: rgba(139,92,246,0.4); transform: translateY(-3px); }
+  .product-card:hover::before { opacity: 1; }
+  .product-card.selected {
+    border-color: var(--void-purple);
+    background: rgba(139,92,246,0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(139,92,246,0.25), 0 0 0 1px rgba(139,92,246,0.3);
+  }
+  .product-card.selected::before { opacity: 1; }
+  .product-card .check-ring {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 22px; height: 22px;
+    border: 2px solid rgba(139,92,246,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-size: 11px;
+    color: transparent;
+  }
+  .product-card.selected .check-ring {
+    background: var(--void-purple);
+    border-color: var(--void-purple);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(139,92,246,0.5);
+  }
+  .product-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .badge-vip { background: rgba(34,211,238,0.15); color: var(--void-cyan); border: 1px solid rgba(34,211,238,0.25); }
+  .badge-mvp { background: rgba(139,92,246,0.15); color: var(--void-purple-bright); border: 1px solid rgba(139,92,246,0.25); }
+  .badge-void { background: rgba(245,158,11,0.15); color: var(--void-gold); border: 1px solid rgba(245,158,11,0.25); }
+  .badge-coins { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+  .badge-popular { background: rgba(139,92,246,0.2); color: var(--void-purple-bright); border: 1px solid rgba(139,92,246,0.35); }
+
+  .product-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    display: block;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px rgba(139,92,246,0.4));
+  }
+  .product-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 5px;
+    position: relative;
+    z-index: 1;
+  }
+  .product-desc {
+    font-size: 12px;
+    color: var(--void-muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .product-price {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+  }
+  .product-price sup {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--void-purple-bright);
+    vertical-align: top;
+    margin-top: 4px;
+  }
+  .product-features {
+    list-style: none;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    z-index: 1;
+  }
+  .product-features li {
+    font-size: 11.5px;
+    color: var(--void-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .product-features li::before {
+    content: '✦';
+    font-size: 7px;
+    color: var(--void-purple);
+    flex-shrink: 0;
+  }
+  .product-card.selected .product-features li { color: rgba(200,190,255,0.85); }
+
+  .popular-ribbon {
+    position: absolute;
+    top: 0; right: 0;
+    background: linear-gradient(135deg, var(--void-purple-mid), var(--void-purple));
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-bottom-left-radius: 8px;
+  }
+
+  /* ── FORM ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--void-muted);
+    letter-spacing: 0.3px;
+  }
+  .form-label span { color: rgba(139,92,246,0.7); margin-left: 2px; }
+  .form-input {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(139,92,246,0.18);
+    border-radius: var(--radius-sm);
+    color: var(--void-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 12px 16px;
+    width: 100%;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .form-input::placeholder { color: var(--void-subtle); }
+  .form-input:focus {
+    border-color: var(--void-purple);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+  }
+  .form-input.error {
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.05);
+  }
+  .form-error {
+    font-size: 12px;
+    color: #f87171;
+    display: none;
+    align-items: center;
+    gap: 5px;
+  }
+  .form-error.show { display: flex; }
+  .form-error::before { content: '⚠'; font-size: 11px; }
+  .form-hint {
+    font-size: 12px;
+    color: var(--void-subtle);
+    margin-top: -4px;
+  }
+
+  /* ── ORDER SUMMARY STRIP ── */
+  .order-summary-strip {
+    background: rgba(139,92,246,0.07);
+    border: 1px solid rgba(139,92,246,0.22);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .oss-left { display: flex; align-items: center; gap: 12px; }
+  .oss-icon { font-size: 28px; line-height: 1; }
+  .oss-name { font-weight: 700; font-size: 15px; color: #fff; }
+  .oss-type { font-size: 12px; color: var(--void-muted); }
+  .oss-price {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--void-purple-bright);
+  }
+
+  /* ── PAYMENT STEP ── */
+  .payment-hero {
+    text-align: center;
+    padding: 16px 0 28px;
+  }
+  .payment-hero-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(124,58,237,0.3));
+    border: 1px solid rgba(139,92,246,0.35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+    animation: pulseRing 2.5s ease-in-out infinite;
+    position: relative;
+  }
+  .payment-hero-icon::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(139,92,246,0.2);
+    animation: pulseRing 2.5s ease-in-out infinite 0.4s;
+  }
+  @keyframes pulseRing { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.06);opacity:0.8} }
+  .payment-hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .payment-hero-sub { font-size: 15px; color: var(--void-muted); }
+
+  .info-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .info-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--void-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color 0.3s;
+  }
+  .info-card:hover { border-color: rgba(139,92,246,0.35); }
+  .info-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--void-subtle);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-card-label::before { font-size: 14px; }
+  .info-card-label.skrill::before { content: '💳'; }
+  .info-card-label.discord::before { content: '💬'; }
+  .info-card-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    word-break: break-all;
+    margin-bottom: 12px;
+  }
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(139,92,246,0.12);
+    border: 1px solid rgba(139,92,246,0.25);
+    color: var(--void-purple-bright);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.3px;
+  }
+  .copy-btn:hover { background: rgba(139,92,246,0.22); border-color: rgba(139,92,246,0.45); transform: translateY(-1px); }
+  .copy-btn.copied {
+    background: rgba(34,197,94,0.12);
+    border-color: rgba(34,197,94,0.35);
+    color: #4ade80;
+  }
+  .copy-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .instructions-card {
+    background: rgba(139,92,246,0.06);
+    border: 1px solid rgba(139,92,246,0.22);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .instructions-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--void-purple-bright);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .instructions-title::before { content: '📋'; font-size: 14px; }
+  .instruction-steps { display: flex; flex-direction: column; gap: 12px; }
+  .instruction-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(139,92,246,0.2);
+    border: 1px solid rgba(139,92,246,0.35);
+    color: var(--void-purple-bright);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 14px; color: var(--void-muted); line-height: 1.55; padding-top: 3px; }
+  .step-text strong { color: #e2d9ff; font-weight: 600; }
+
+  .order-receipt {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--void-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .receipt-header {
+    background: rgba(139,92,246,0.08);
+    border-bottom: 1px solid var(--void-border);
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--void-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .receipt-header::before { content: '🧾'; }
+  .receipt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(139,92,246,0.08);
+  }
+  .receipt-row:last-child { border-bottom: none; }
+  .receipt-row.total { background: rgba(139,92,246,0.05); }
+  .receipt-key { font-size: 13px; color: var(--void-muted); }
+  .receipt-val { font-size: 13px; color: var(--void-text); font-weight: 500; }
+  .receipt-row.total .receipt-key { font-weight: 700; color: var(--void-text); }
+  .receipt-row.total .receipt-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--void-purple-bright);
+  }
+
+  /* ── NAVIGATION BUTTONS ── */
+  .step-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    border: none;
+    outline: none;
+    letter-spacing: 0.2px;
+    text-decoration: none;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid rgba(139,92,246,0.22);
+    color: var(--void-muted);
+  }
+  .btn-ghost:hover { border-color: rgba(139,92,246,0.4); color: var(--void-purple-bright); background: var(--void-purple-soft); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--void-purple-mid), var(--void-purple));
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.5); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-primary svg, .btn-ghost svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .btn-wide { flex: 1; justify-content: center; }
+
+  /* ── WARNING NOTE ── */
+  .note-card {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fcd34d;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .note-card::before { content: '⚠️'; font-size: 14px; flex-shrink: 0; }
+
+  /* ── SUCCESS STATE ── */
+  .success-banner {
+    background: rgba(34,197,94,0.07);
+    border: 1px solid rgba(34,197,94,0.22);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .success-icon {
+    width: 42px; height: 42px;
+    background: rgba(34,197,94,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .success-text-title { font-weight: 700; font-size: 15px; color: #4ade80; margin-bottom: 3px; }
+  .success-text-sub { font-size: 13px; color: rgba(74,222,128,0.7); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--void-border);
+    background: rgba(6,3,15,0.6);
+    padding: 32px 2rem;
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .footer-logo span { color: var(--void-purple-bright); }
+  .footer-meta { font-size: 13px; color: var(--void-subtle); line-height: 1.7; }
+  .footer-links { display: flex; gap: 20px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
+  .footer-link { font-size: 13px; color: var(--void-muted); text-decoration: none; transition: color 0.2s; }
+  .footer-link:hover { color: var(--void-purple-bright); }
+
+  /* ── LOADING OVERLAY ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6,3,15,0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(139,92,246,0.2);
+    border-top-color: var(--void-purple);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--void-muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .info-cards-grid { grid-template-columns: 1fr; }
+    .products-grid { grid-template-columns: 1fr; }
+    .step-connector { width: 36px; }
+    .glass-card { padding: 22px 18px; }
+    .step-nav { flex-direction: column-reverse; }
+    .btn { width: 100%; justify-content: center; }
+    .order-summary-strip { flex-direction: column; align-items: flex-start; }
+    .nav-links { display: none; }
+    .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: rgba(13,8,32,0.98); border-bottom: 1px solid var(--void-border); padding: 16px; gap: 4px; z-index: 99; }
+    nav { position: relative; }
+    .nav-hamburger { display: flex; }
+    .store-header { padding: 40px 1.5rem 32px; }
+    .progress-stepper { gap: 0; }
+    .step-label { font-size: 10px; }
+  }
+
+  @media (max-width: 440px) {
+    .step-circle { width: 34px; height: 34px; font-size: 13px; }
+    .step-connector { width: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ANIMATED BG -->
+<div class="bg-layer"></div>
+<div class="stars" id="stars"></div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Processing…</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">Void<span>MC</span></div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#" class="nav-link">Home</a>
+      <a href="#" class="nav-link">Play</a>
+      <a href="#" class="nav-link active">Store</a>
+      <a href="#" class="nav-link">Discord</a>
+      <a href="#" class="nav-link">Vote</a>
+    </div>
+    <button class="nav-store-btn" onclick="scrollToCheckout()">Buy Ranks</button>
+    <div class="nav-hamburger" id="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- STORE HEADER -->
+<div class="store-header">
+  <div class="store-eyebrow">VoidMC Official Store</div>
+  <h1 class="store-title">
+    Upgrade Your<br>
+    <span class="gradient-text">Minecraft Experience</span>
+  </h1>
+  <p class="store-subtitle">Support the server and unlock exclusive perks, ranks, and cosmetics. Delivered instantly to your account.</p>
+</div>
+
+<!-- CHECKOUT WRAPPER -->
+<div class="checkout-wrapper" id="checkoutSection">
+
+  <!-- PROGRESS STEPPER -->
+  <div class="progress-stepper" id="progressStepper">
+    <div class="step-item active" id="stepItem1">
+      <div class="step-circle active" id="stepCircle1"><span>1</span></div>
+      <div class="step-label">Select Product</div>
+    </div>
+    <div class="step-connector" id="connector1">
+      <div class="step-connector-fill"></div>
+    </div>
+    <div class="step-item" id="stepItem2">
+      <div class="step-circle" id="stepCircle2"><span>2</span></div>
+      <div class="step-label">Your Details</div>
+    </div>
+    <div class="step-connector" id="connector2">
+      <div class="step-connector-fill"></div>
+    </div>
+    <div class="step-item" id="stepItem3">
+      <div class="step-circle" id="stepCircle3"><span>3</span></div>
+      <div class="step-label">Payment</div>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 1: SELECT PRODUCT ══════════ -->
+  <div class="step-panel active" id="step1">
+    <div class="glass-card">
+      <div class="section-label">Choose Your Upgrade</div>
+      <div class="section-title">Select a Product</div>
+
+      <div class="products-grid">
+
+        <!-- VIP -->
+        <div class="product-card" onclick="selectProduct(this, 'VIP Rank', 4.99, '⭐')" style="--c1:rgba(34,211,238,0.1);--c2:rgba(34,211,238,0.02);">
+          <div class="check-ring">✓</div>
+          <span class="product-icon">⭐</span>
+          <div class="product-badge badge-vip">Rank</div>
+          <div class="product-name">VIP Rank</div>
+          <div class="product-desc">Perfect entry-level rank for dedicated players.</div>
+          <ul class="product-features">
+            <li>Custom VIP prefix in chat</li>
+            <li>5 /sethome locations</li>
+            <li>Access to VIP kit (24h cooldown)</li>
+            <li>Colored chat messages</li>
+            <li>Priority queue on join</li>
+          </ul>
+          <div class="product-price"><sup>$</sup>4<span style="font-size:18px">.99</span></div>
+        </div>
+
+        <!-- MVP -->
+        <div class="product-card" onclick="selectProduct(this, 'MVP Rank', 9.99, '💎')" style="--c1:rgba(139,92,246,0.12);--c2:rgba(139,92,246,0.03);position:relative;">
+          <div class="popular-ribbon">Best Value</div>
+          <div class="check-ring">✓</div>
+          <span class="product-icon">💎</span>
+          <div class="product-badge badge-mvp">Rank</div>
+          <div class="product-name">MVP Rank</div>
+          <div class="product-desc">The most popular rank among our community.</div>
+          <ul class="product-features">
+            <li>Custom MVP prefix + glowing name</li>
+            <li>15 /sethome locations</li>
+            <li>Daily MVP kit (powerful gear)</li>
+            <li>RGB chat + nickname support</li>
+            <li>Fly in spawn &amp; warps</li>
+            <li>Access to MVP-only arenas</li>
+          </ul>
+          <div class="product-price"><sup>$</sup>9<span style="font-size:18px">.99</span></div>
+        </div>
+
+        <!-- VOID -->
+        <div class="product-card" onclick="selectProduct(this, 'VOID Rank', 19.99, '🔮')" style="--c1:rgba(245,158,11,0.1);--c2:rgba(245,158,11,0.02);">
+          <div class="check-ring">✓</div>
+          <span class="product-icon">🔮</span>
+          <div class="product-badge badge-void">Elite Rank</div>
+          <div class="product-name">VOID Rank</div>
+          <div class="product-desc">The ultimate rank — maximum prestige &amp; perks.</div>
+          <ul class="product-features">
+            <li>Animated VOID prefix (gold/purple)</li>
+            <li>Unlimited /sethome locations</li>
+            <li>Legendary VOID kit (12h cooldown)</li>
+            <li>Full cosmetics access</li>
+            <li>Global fly everywhere</li>
+            <li>Exclusive VOID Discord role</li>
+            <li>Custom join/quit messages</li>
+          </ul>
+          <div class="product-price"><sup>$</sup>19<span style="font-size:18px">.99</span></div>
+        </div>
+
+        <!-- 1000 Coins -->
+        <div class="product-card" onclick="selectProduct(this, '1000 Coins', 2.99, '🪙')" style="--c1:rgba(251,191,36,0.1);--c2:rgba(251,191,36,0.02);">
+          <div class="check-ring">✓</div>
+          <span class="product-icon">🪙</span>
+          <div class="product-badge badge-coins">In-Game Currency</div>
+          <div class="product-name">1,000 Coins</div>
+          <div class="product-desc">Spend in our in-game shop for items &amp; cosmetics.</div>
+          <ul class="product-features">
+            <li>1,000 VoidCoins added instantly</li>
+            <li>Spend in /shop or /cosmetics</li>
+            <li>Transferable to other players</li>
+            <li>Never expires</li>
+          </ul>
+          <div class="product-price"><sup>$</sup>2<span style="font-size:18px">.99</span></div>
+        </div>
+
+        <!-- 5000 Coins -->
+        <div class="product-card" onclick="selectProduct(this, '5000 Coins', 9.99, '💰')" style="--c1:rgba(251,191,36,0.12);--c2:rgba(251,191,36,0.02);position:relative;">
+          <div class="popular-ribbon">Best Deal</div>
+          <div class="check-ring">✓</div>
+          <span class="product-icon">💰</span>
+          <div class="product-badge badge-coins">In-Game Currency</div>
+          <div class="product-name">5,000 Coins</div>
+          <div class="product-desc">Massive coin bundle — save 33% vs buying separately.</div>
+          <ul class="product-features">
+            <li>5,000 VoidCoins added instantly</li>
+            <li>33% savings vs 1k packs</li>
+            <li>Bonus mystery cosmetic crate</li>
+            <li>Transferable to other players</li>
+          </ul>
+          <div class="product-price"><sup>$</sup>9<span style="font-size:18px">.99</span></div>
+        </div>
+
+      </div>
+
+      <p id="productError" style="font-size:13px;color:#f87171;margin-top:14px;display:none;">⚠ Please select a product to continue.</p>
+    </div>
+
+    <div class="step-nav">
+      <div></div>
+      <button class="btn btn-primary" onclick="goStep(2)">
+        Continue to Details
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 2: ACCOUNT DETAILS ══════════ -->
+  <div class="step-panel" id="step2">
+
+    <!-- Order Summary Strip -->
+    <div class="order-summary-strip" id="orderSummaryStrip">
+      <div class="oss-left">
+        <div class="oss-icon" id="ossIcon">💎</div>
+        <div>
+          <div class="oss-name" id="ossName">MVP Rank</div>
+          <div class="oss-type">Selected Product</div>
+        </div>
+      </div>
+      <div class="oss-price" id="ossPrice">$9.99</div>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-label">Account Information</div>
+      <div class="section-title">Your Details</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Minecraft Username <span>*</span></label>
+          <input type="text" class="form-input" id="mcUsername" placeholder="e.g. Steve123" autocomplete="off" maxlength="16">
+          <div class="form-error" id="err-mcUsername">Enter your Minecraft username</div>
+          <div class="form-hint">Java or Bedrock edition username</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discord Username <span>*</span></label>
+          <input type="text" class="form-input" id="discordUsername" placeholder="e.g. steve#1234 or steve" autocomplete="off">
+          <div class="form-error" id="err-discordUsername">Enter your Discord username</div>
+          <div class="form-hint">So we can deliver your purchase</div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email Address <span>*</span></label>
+          <input type="email" class="form-input" id="emailAddress" placeholder="you@example.com" autocomplete="email">
+          <div class="form-error" id="err-emailAddress">Enter a valid email address</div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Confirm Email Address <span>*</span></label>
+          <input type="email" class="form-input" id="confirmEmail" placeholder="you@example.com" autocomplete="email">
+          <div class="form-error" id="err-confirmEmail">Emails do not match</div>
+        </div>
+      </div>
+
+      <div class="note-card" style="margin-top:20px;margin-bottom:0">
+        Your details are used only to deliver your purchase. We do not share or sell your information.
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goStep(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <button class="btn btn-primary" onclick="goStep(3)">
+        Proceed to Payment
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 3: PAYMENT ══════════ -->
+  <div class="step-panel" id="step3">
+
+    <div class="payment-hero">
+      <div class="payment-hero-icon">💳</div>
+      <div class="payment-hero-title">Send Your Payment</div>
+      <div class="payment-hero-sub">Follow the instructions below to complete your purchase via Skrill.</div>
+    </div>
+
+    <!-- Order receipt -->
+    <div class="order-receipt">
+      <div class="receipt-header">Order Summary</div>
+      <div class="receipt-row"><span class="receipt-key">Product</span><span class="receipt-val" id="r-product">MVP Rank</span></div>
+      <div class="receipt-row"><span class="receipt-key">Minecraft Username</span><span class="receipt-val" id="r-mc">—</span></div>
+      <div class="receipt-row"><span class="receipt-key">Discord Username</span><span class="receipt-val" id="r-discord">—</span></div>
+      <div class="receipt-row"><span class="receipt-key">Email</span><span class="receipt-val" id="r-email">—</span></div>
+      <div class="receipt-row"><span class="receipt-key">Payment Method</span><span class="receipt-val">Skrill</span></div>
+      <div class="receipt-row total"><span class="receipt-key">Total Due</span><span class="receipt-val" id="r-total">$9.99</span></div>
+    </div>
+
+    <!-- Payment info cards -->
+    <div class="info-cards-grid">
+      <div class="info-card">
+        <div class="info-card-label skrill">Skrill Email</div>
+        <div class="info-card-value">Drippzzzbusiness@gmail.com</div>
+        <button class="copy-btn" id="copySkrill" onclick="copyToClipboard('Drippzzzbusiness@gmail.com', 'copySkrill')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Email
+        </button>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label discord">Discord Contact</div>
+        <div class="info-card-value">tg_dg_</div>
+        <button class="copy-btn" id="copyDiscord" onclick="copyToClipboard('tg_dg_', 'copyDiscord')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Username
+        </button>
+      </div>
+    </div>
+
+    <!-- Payment Instructions -->
+    <div class="instructions-card">
+      <div class="instructions-title">How to Complete Your Purchase</div>
+      <div class="instruction-steps">
+        <div class="instruction-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Open Skrill and send <strong id="instr-amount">$9.99 USD</strong> to <strong>Drippzzzbusiness@gmail.com</strong></div>
+        </div>
+        <div class="instruction-step">
+          <div class="step-num">2</div>
+          <div class="step-text">In the Skrill payment note, include your <strong>Minecraft username</strong> and <strong>purchased product</strong> (e.g. "Steve123 — MVP Rank")</div>
+        </div>
+        <div class="instruction-step">
+          <div class="step-num">3</div>
+          <div class="step-text">After sending payment, contact Discord user <strong>tg_dg_</strong> with your <strong>transaction screenshot</strong>, Minecraft username, and product purchased.</div>
+        </div>
+        <div class="instruction-step">
+          <div class="step-num">4</div>
+          <div class="step-text">Your rank or coins will be applied to your account within <strong>24 hours</strong> of payment confirmation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-banner">
+      <div class="success-icon">✅</div>
+      <div>
+        <div class="success-text-title">You're almost there!</div>
+        <div class="success-text-sub">Send payment via Skrill and DM <strong>tg_dg_</strong> on Discord to confirm delivery.</div>
+      </div>
+    </div>
+
+    <div class="note-card">
+      Always include your Minecraft username and the product name in your Skrill payment note and Discord message to ensure fast, accurate delivery.
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goStep(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Edit Details
+      </button>
+      <button class="btn btn-primary btn-wide" onclick="openSkrill()">
+        Open Skrill App
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Void<span>MC</span></div>
+  <div class="footer-links">
+    <a href="#" class="footer-link">Home</a>
+    <a href="#" class="footer-link">Store</a>
+    <a href="#" class="footer-link">Discord</a>
+    <a href="#" class="footer-link">Rules</a>
+    <a href="#" class="footer-link">Support</a>
+  </div>
+  <div class="footer-meta">
+    VoidMC is not affiliated with or endorsed by Mojang Studios.<br>
+    All purchases are processed via Skrill. By purchasing, you agree to our Terms of Service.
+  </div>
+</footer>
+
+<script>
+// ── STARS ──
+(function() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:-${Math.random()*5}s;opacity:${0.1+Math.random()*0.5}`;
+    container.appendChild(s);
+  }
+})();
+
+// ── STATE ──
+let selectedProduct = null;
+let selectedPrice = null;
+let selectedIcon = null;
+let currentStep = 1;
+
+// ── PRODUCT SELECTION ──
+function selectProduct(card, name, price, icon) {
+  document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedProduct = name;
+  selectedPrice = price;
+  selectedIcon = icon;
+  document.getElementById('productError').style.display = 'none';
+  updateOrderStrip();
+}
+
+function updateOrderStrip() {
+  if (!selectedProduct) return;
+  document.getElementById('ossName').textContent = selectedProduct;
+  document.getElementById('ossPrice').textContent = '$' + selectedPrice.toFixed(2);
+  document.getElementById('ossIcon').textContent = selectedIcon;
+}
+
+// ── STEP NAVIGATION ──
+function goStep(step) {
+  if (step === 2 && !validateStep1()) return;
+  if (step === 3 && !validateStep2()) return;
+
+  if (step === 3) {
+    showLoading(true);
+    setTimeout(() => {
+      showLoading(false);
+      applyStep(step);
+      populateReceipt();
+    }, 900);
+    return;
+  }
+  applyStep(step);
+}
+
+function applyStep(step) {
+  // Hide all panels
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+  }
+  document.getElementById('step' + step).classList.add('active');
+  currentStep = step;
+  updateStepper(step);
+  window.scrollTo({ top: document.getElementById('checkoutSection').offsetTop - 80, behavior: 'smooth' });
+}
+
+function updateStepper(active) {
+  for (let i = 1; i <= 3; i++) {
+    const item = document.getElementById('stepItem' + i);
+    const circle = document.getElementById('stepCircle' + i);
+    item.classList.remove('active', 'done');
+    circle.classList.remove('active', 'done');
+    if (i < active) { item.classList.add('done'); circle.classList.add('done'); }
+    else if (i === active) { item.classList.add('active'); circle.classList.add('active'); }
+  }
+  for (let i = 1; i <= 2; i++) {
+    const conn = document.getElementById('connector' + i);
+    conn.classList.remove('done', 'active');
+    if (i < active - 1) conn.classList.add('done');
+    else if (i === active - 1) conn.classList.add('active');
+  }
+}
+
+// ── VALIDATION ──
+function validateStep1() {
+  if (!selectedProduct) {
+    document.getElementById('productError').style.display = 'block';
+    return false;
+  }
+  return true;
+}
+
+function validateStep2() {
+  let valid = true;
+  const fields = [
+    { id: 'mcUsername', errId: 'err-mcUsername', check: v => v.trim().length >= 2 && v.trim().length <= 16 },
+    { id: 'discordUsername', errId: 'err-discordUsername', check: v => v.trim().length >= 1 },
+    { id: 'emailAddress', errId: 'err-emailAddress', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'confirmEmail', errId: 'err-confirmEmail', check: v => v === document.getElementById('emailAddress').value && v.length > 0 }
+  ];
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const err = document.getElementById(f.errId);
+    if (!f.check(el.value)) {
+      el.classList.add('error');
+      err.classList.add('show');
+      valid = false;
+    } else {
+      el.classList.remove('error');
+      err.classList.remove('show');
+    }
+  });
+  return valid;
+}
+
+// Clear errors on input
+document.querySelectorAll('.form-input').forEach(el => {
+  el.addEventListener('input', function() {
+    this.classList.remove('error');
+    const errEl = document.getElementById('err-' + this.id);
+    if (errEl) errEl.classList.remove('show');
+  });
+});
+
+// ── POPULATE RECEIPT ──
+function populateReceipt() {
+  document.getElementById('r-product').textContent = selectedProduct;
+  document.getElementById('r-mc').textContent = document.getElementById('mcUsername').value.trim();
+  document.getElementById('r-discord').textContent = document.getElementById('discordUsername').value.trim();
+  const email = document.getElementById('emailAddress').value.trim();
+  document.getElementById('r-email').textContent = email.length > 28 ? email.slice(0, 25) + '...' : email;
+  document.getElementById('r-total').textContent = '$' + selectedPrice.toFixed(2);
+  document.getElementById('instr-amount').textContent = '$' + selectedPrice.toFixed(2) + ' USD';
+}
+
+// ── COPY TO CLIPBOARD ──
+function copyToClipboard(text, btnId) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = orig;
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById(btnId);
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+  });
+}
+
+// ── OPEN SKRILL ──
+function openSkrill() {
+  window.open('https://www.skrill.com', '_blank');
+}
+
+// ── LOADING ──
+function showLoading(show) {
+  document.getElementById('loadingOverlay').classList.toggle('show', show);
+}
+
+// ── SCROLL TO CHECKOUT ──
+function scrollToCheckout() {
+  document.getElementById('checkoutSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── NAV HAMBURGER ──
+function toggleNav() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+// ── AUTO-SELECT FIRST PRODUCT (nice UX) ──
+// Don't auto-select — require deliberate choice
+</script>
+</body>
+</html>
